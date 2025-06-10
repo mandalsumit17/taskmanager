@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Task Manager</title>
+  <style>
+    /* --- Global Styles --- */
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f4f4f4; color: #333; }
+    h1 { text-align: center; }
+
+    /* --- Task Form Styles --- */
+    .task-form { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto 20px; }
+    .task-form input, .task-form select, .task-form button { width: 100%; margin: 8px 0; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    .task-form .inline { display: flex; gap: 10px; }
+    .task-form .inline > * { flex: 1; }
+
+    /* --- Task List Styles --- */
+    .controls, .task-list { max-width: 600px; margin: 0 auto; }
+    .controls { margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .controls select { flex: 1; }
+    .task-item { background: #fff; padding: 15px; margin-bottom: 10px; border-left: 5px solid; display: flex; flex-direction: column; border-radius: 4px; transition: background 0.3s; }
+    .task-item.completed { background: #e0ffe0; text-decoration: line-through; }
+    .task-header { display: flex; justify-content: space-between; align-items: center; }
+    .task-actions button { margin-left: 5px; padding: 5px 10px; }
+    .priority-Urgent { border-color: #e53935; }
+    .priority-High { border-color: #f57c00; }
+    .priority-Medium { border-color: #fbc02d; }
+    .priority-Low { border-color: #43a047; }
+
+    /* --- Responsive Layout --- */
+    @media (max-width: 600px) {
+      .inline { flex-direction: column; }
+      .controls { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Simple Task Manager</h1>
+
+  <div class="task-form">
+    <input type="text" id="description" placeholder="Task Description" required>
+    <input type="date" id="dueDate" required>
+    <div class="inline">
+      <select id="type"></select>
+      <input type="text" id="newType" placeholder="Add new type (optional)">
+    </div>
+    <select id="priority">
+      <option value="Urgent">Urgent</option>
+      <option value="High">High</option>
+      <option value="Medium" selected>Medium</option>
+      <option value="Low">Low</option>
+    </select>
+    <button onclick="addTask()">Add Task</button>
+  </div>
+
+  <div class="controls">
+    <select id="filter" onchange="filterTasks()">
+      <option value="all">Show All</option>
+      <option value="completed">Show Completed</option>
+      <option value="pending">Show Pending</option>
+    </select>
+    <select id="sort" onchange="sortTasks()">
+      <option value="dueDate">Sort by Due Date</option>
+      <option value="priority">Sort by Priority</option>
+    </select>
+  </div>
+
+  <div class="task-list" id="taskList"></div>
+
+  <script>
+    /* --- Data & State --- */
+    const defaultTypes = ["Home", "School", "Work"];
+    let tasks = [];
+    let currentFilter = 'all';
+    let currentSort = 'dueDate';
+
+    /* --- Utility Functions --- */
+    function populateTypes() {
+      const sel = document.getElementById('type');
+      sel.innerHTML = '';
+      const types = [...new Set(defaultTypes.concat(tasks.map(t=>t.type)))];
+      types.forEach(type => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = type;
+        sel.appendChild(opt);
+      });
+    }
+
+    function saveTasks() {
+      try {
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+      } catch(e) {
+        console.error('Saving failed', e);
+      }
+    }
+
+    function loadTasks() {
+      try {
+        tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+      } catch(e) {
+        console.error('Loading failed', e);
+        tasks = [];
+      }
+      populateTypes();
+      renderTasks();
+    }
+
+    /* --- Task CRUD --- */
+    function addTask() {
+      const desc = document.getElementById('description').value.trim();
+      const due = document.getElementById('dueDate').value;
+      const newType = document.getElementById('newType').value.trim();
+      const type = newType || document.getElementById('type').value;
+      const priority = document.getElementById('priority').value;
+      if (!desc || !due || !type || !priority) return alert('Fill in all required fields.');
+
+      const task = { id: Date.now(), description: desc, dueDate: due, type, priority, completed: false };
+      tasks.push(task);
+      saveTasks();
+      renderTasks();
+      document.querySelector('.task-form').reset();
+      populateTypes();
+    }
+
+    function toggleComplete(id) {
+      const t = tasks.find(x => x.id === id);
+      if (t) t.completed = !t.completed;
+      saveTasks(); renderTasks();
+    }
+
+    function deleteTask(id) {
+      const confirmBox = document.createElement('div');
+      confirmBox.innerHTML = `
+        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.3);
+                         display:flex;align-items:center;justify-content:center;">
+          <div style="background:#fff;padding:20px;border-radius:8px;text-align:center;">
+            <p>Delete this task?</p>
+            <button id="yes">Yes</button><button id="no">No</button>
+          </div>
+        </div>`;
+      document.body.appendChild(confirmBox);
+      confirmBox.querySelector('#yes').onclick = () => {
+        tasks = tasks.filter(x=>x.id!==id);
+        saveTasks();
+        renderTasks();
+        document.body.removeChild(confirmBox);
+      };
+      confirmBox.querySelector('#no').onclick = () => {
+        document.body.removeChild(confirmBox);
+      };
+    }
+
+    function editTask(id) {
+      const t = tasks.find(x => x.id === id);
+      if (!t) return;
+      const newDesc = prompt('Edit Description', t.description);
+      const newDate = prompt('Edit Due Date (YYYY-MM-DD)', t.dueDate);
+      const newType = prompt('Edit Type', t.type);
+      const newPri = prompt('Edit Priority (Urgent, High, Medium, Low)', t.priority);
+      if (newDesc && newDate && newType && newPri) {
+        t.description = newDesc;
+        t.dueDate = newDate;
+        t.type = newType;
+        t.priority = newPri;
+        saveTasks();
+        populateTypes();
+        renderTasks();
+      }
+    }
+
+    /* --- Render & Controls --- */
+    function renderTasks() {
+      let arr = tasks.slice();
+      if (currentFilter === 'completed') arr = arr.filter(x=>x.completed);
+      if (currentFilter === 'pending') arr = arr.filter(x=>!x.completed);
+
+      if (currentSort === 'dueDate') {
+        arr.sort((a,b)=> new Date(a.dueDate) - new Date(b.dueDate));
+      } else {
+        const order = { Urgent:4, High:3, Medium:2, Low:1 };
+        arr.sort((a,b)=> order[b.priority]-order[a.priority]);
+      }
+
+      const c = document.getElementById('taskList');
+      c.innerHTML = '';
+      if (!arr.length) {
+        c.innerHTML = '<p style="text-align:center">No tasks.</p>';
+        return;
+      }
+
+      arr.forEach(t => {
+        const el = document.createElement('div');
+        el.className = `task-item priority-${t.priority}${t.completed?' completed':''}`;
+        el.innerHTML = `
+          <div class="task-header">
+            <div>
+              <strong>${t.description}</strong><br>
+              Due: ${t.dueDate} | Type: ${t.type} | Priority: ${t.priority}
+            </div>
+            <div class="task-actions">
+              <input type="checkbox" ${t.completed?'checked':''} onclick="toggleComplete(${t.id})">
+              <button onclick="editTask(${t.id})">Edit</button>
+              <button onclick="deleteTask(${t.id})">Delete</button>
+            </div>
+          </div>`;
+        c.appendChild(el);
+      });
+    }
+
+    function filterTasks() {
+      currentFilter = document.getElementById('filter').value;
+      renderTasks();
+    }
+
+    function sortTasks() {
+      currentSort = document.getElementById('sort').value;
+      renderTasks();
+    }
+
+    window.onload = loadTasks;
+  </script>
+</body>
+</html>
