@@ -171,12 +171,9 @@
         }
 
         /* --- Task List Styles --- */
-        .controls, .task-list {
-            max-width: 500px;
-            margin: 0 auto;
-        }
         .controls {
-            margin-bottom: 24px;
+            max-width: 500px;
+            margin: 0 auto 24px; /* Reduced bottom margin slightly */
             display: flex;
             flex-wrap: wrap;
             gap: 14px;
@@ -188,6 +185,25 @@
             z-index: 1;
             border: none;
         }
+        .controls input[type="text"] {
+            flex: 2; /* Search bar takes more space */
+            min-width: 150px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1.5px solid #d1d9e6;
+            background: rgba(247,250,253,0.98);
+            font-size: 1.09rem;
+            color: #22334d;
+            transition: border 0.2s, background 0.2s, box-shadow 0.2s;
+            font-weight: 500;
+            outline: none;
+            box-shadow: 0 1px 6px rgba(44,62,80,0.06);
+        }
+        .controls input[type="text"]:focus {
+            border-color: #3b82f6;
+            background: #fff;
+            box-shadow: 0 2px 16px rgba(91,157,249,0.16);
+        }
         .controls select {
             flex: 1;
             padding: 14px 16px;
@@ -198,6 +214,8 @@
             color: #22334d;
             transition: border 0.2s, background 0.2s, box-shadow 0.2s;
             font-weight: 500;
+            outline: none;
+            box-shadow: 0 1px 6px rgba(44,62,80,0.06);
         }
         .controls select:focus {
             border-color: #3b82f6;
@@ -233,8 +251,9 @@
 
 
         .task-list {
-            margin-bottom: 48px;
+            max-width: 500px; /* Aligned with form/controls */
             width: 100%;
+            margin: 0 auto 48px; /* Consistent margin */
             z-index: 1;
             position: relative;
         }
@@ -276,6 +295,19 @@
             border-color: #43a047;
             filter: grayscale(0.15) brightness(1.05);
         }
+        /* New due date highlighting */
+        .task-item.overdue {
+            border-color: #ef5350 !important; /* Lighter red */
+            background: linear-gradient(90deg, #ffe0e0 60%, #f7fafd 100%);
+            box-shadow: 0 6px 32px rgba(239, 83, 80, 0.13);
+        }
+        .task-item.due-soon {
+            border-color: #ffb74d !important; /* Lighter orange */
+            background: linear-gradient(90deg, #fff7e0 60%, #f7fafd 100%);
+            box-shadow: 0 6px 32px rgba(255, 183, 77, 0.13);
+        }
+
+
         .task-header {
             display: flex;
             justify-content: space-between;
@@ -405,30 +437,30 @@
             box-shadow: 0 2px 12px rgba(44,62,80,0.09);
             outline: none;
         }
-        .modal-box #yes, .modal-box #confirmClear { /* Added #confirmClear */
-            background: linear-gradient(90deg, #e53935 0%, #f57c00 100%);
+        .modal-box #yes, .modal-box #confirmClear, .modal-box #saveEdit { /* Consolidated positive actions */
+            background: linear-gradient(90deg, #3b82f6 0%, #43a047 100%); /* Changed to blue/green for save/confirm */
             color: #fff;
         }
-        .modal-box #yes:hover, .modal-box #yes:focus, .modal-box #confirmClear:hover, .modal-box #confirmClear:focus {
-            background: linear-gradient(90deg, #b71c1c 0%, #f57c00 100%);
-            box-shadow: 0 4px 24px rgba(229,57,53,0.18);
+        .modal-box #yes:hover, .modal-box #yes:focus, .modal-box #confirmClear:hover, .modal-box #confirmClear:focus, .modal-box #saveEdit:hover, .modal-box #saveEdit:focus {
+            background: linear-gradient(90deg, #2563eb 0%, #388e3c 100%); /* Darker on hover */
+            box-shadow: 0 4px 24px rgba(91,157,249,0.18);
             transform: scale(1.04) translateY(-1px);
         }
-        .modal-box #yes:active, .modal-box #confirmClear:active {
+        .modal-box #yes:active, .modal-box #confirmClear:active, .modal-box #saveEdit:active {
             transform: scale(1.02) translateY(1px);
-            box-shadow: 0 1px 8px rgba(229,57,53,0.08);
+            box-shadow: 0 1px 8px rgba(91,157,249,0.08);
         }
 
-        .modal-box #no, .modal-box #cancelClear { /* Added #cancelClear */
+        .modal-box #no, .modal-box #cancelClear, .modal-box #cancelEdit { /* Consolidated negative actions */
             background: #e3eafc;
             color: #22334d;
         }
-        .modal-box #no:hover, .modal-box #no:focus, .modal-box #cancelClear:hover, .modal-box #cancelClear:focus {
+        .modal-box #no:hover, .modal-box #no:focus, .modal-box #cancelClear:hover, .modal-box #cancelClear:focus, .modal-box #cancelEdit:hover, .modal-box #cancelEdit:focus {
             background: #d1d9e6;
             color: #22334d;
             transform: scale(1.04) translateY(-1px);
         }
-        .modal-box #no:active, .modal-box #cancelClear:active {
+        .modal-box #no:active, .modal-box #cancelClear:active, .modal-box #cancelEdit:active {
             transform: scale(1.02) translateY(1px);
             box-shadow: 0 1px 8px rgba(44,62,80,0.08);
         }
@@ -492,7 +524,7 @@
             .task-form, .controls, .task-list, .modal-box { max-width: 99vw; margin-left: 5px; margin-right: 5px;}
             .task-form { padding: 24px 18px 18px 18px; }
             .controls { padding: 14px 10px; flex-direction: column; align-items: stretch;}
-            .controls select, .controls button { width: 100%;}
+            .controls select, .controls button, .controls input[type="text"] { width: 100%;}
             .task-item { padding: 18px 18px 14px 18px; }
             .modal-box { min-width: 90vw; }
             h1 { font-size: 2rem; margin-top: 32px; margin-bottom: 24px; }
@@ -581,6 +613,7 @@
     </div>
 
     <div class="controls">
+        <input type="text" id="searchTasks" placeholder="Search tasks..." onkeyup="searchTasks()" aria-label="Search tasks by description">
         <select id="filter" onchange="filterTasks()" aria-label="Filter Tasks">
             <option value="all">Show All</option>
             <option value="completed">Show Completed</option>
@@ -643,6 +676,8 @@
         let tasks = [];
         let currentFilter = 'all';
         let currentSort = 'dueDate';
+        let currentSearchTerm = ''; // New state for search
+
         let taskIdToDelete = null; // To store ID for delete confirmation
         let taskIdToEdit = null; // To store ID for edit modal
 
@@ -656,6 +691,10 @@
 
         const descError = document.getElementById('descriptionError');
         const dueDateError = document.getElementById('dueDateError');
+
+        const filterSelect = document.getElementById('filter');
+        const sortSelect = document.getElementById('sort');
+        const searchInput = document.getElementById('searchTasks'); // New search input
 
         const deleteConfirmModal = document.getElementById('deleteConfirmModal');
         const confirmDeleteBtn = document.getElementById('yes');
@@ -678,21 +717,40 @@
 
         /* --- Utility Functions --- */
         function populateTypes(targetSelect = typeSelect, currentType = null) {
-            targetSelect.innerHTML = '';
-            // Combine default types with types from existing tasks
             const allTypes = [...new Set(defaultTypes.concat(tasks.map(t => t.type)))].sort();
+            const existingOptions = Array.from(targetSelect.options).map(opt => opt.value);
 
-            allTypes.forEach(type => {
-                const opt = document.createElement('option');
-                opt.value = opt.textContent = type;
-                targetSelect.appendChild(opt);
-            });
+            // Clear only if the target is edit modal or if options have changed significantly
+            if (targetSelect === editTypeSelect || allTypes.length !== existingOptions.length || !allTypes.every(type => existingOptions.includes(type))) {
+                targetSelect.innerHTML = '';
+                allTypes.forEach(type => {
+                    const opt = document.createElement('option');
+                    opt.value = opt.textContent = type;
+                    targetSelect.appendChild(opt);
+                });
+            } else {
+                 // For the main type select, just ensure all types are present without full rebuild
+                allTypes.forEach(type => {
+                    if (!existingOptions.includes(type)) {
+                        const opt = document.createElement('option');
+                        opt.value = opt.textContent = type;
+                        targetSelect.appendChild(opt);
+                    }
+                });
+            }
+
+
             // Select the provided current type if in edit mode
             if (currentType && allTypes.includes(currentType)) {
                 targetSelect.value = currentType;
             } else if (targetSelect === typeSelect) {
-                // For main add form, select the first default or 'Work' if available
-                targetSelect.value = defaultTypes.includes("Work") ? "Work" : allTypes[0];
+                // For main add form, restore last selected if available, or default
+                const lastSelectedType = localStorage.getItem('lastSelectedType');
+                if (lastSelectedType && allTypes.includes(lastSelectedType)) {
+                    targetSelect.value = lastSelectedType;
+                } else {
+                    targetSelect.value = defaultTypes.includes("Work") ? "Work" : allTypes[0];
+                }
             }
         }
 
@@ -700,6 +758,10 @@
             try {
                 localStorage.setItem('tasks', JSON.stringify(tasks));
                 localStorage.setItem('defaultTypes', JSON.stringify(defaultTypes)); // Save types too
+                localStorage.setItem('currentFilter', currentFilter); // Save filter
+                localStorage.setItem('currentSort', currentSort);     // Save sort
+                localStorage.setItem('currentSearchTerm', currentSearchTerm); // Save search term
+                localStorage.setItem('lastSelectedType', typeSelect.value); // Save last selected type
             } catch (e) {
                 console.error('Saving failed', e);
             }
@@ -709,12 +771,24 @@
             try {
                 tasks = JSON.parse(localStorage.getItem('tasks')) || [];
                 defaultTypes = JSON.parse(localStorage.getItem('defaultTypes')) || ["Home", "School", "Work"];
+                currentFilter = localStorage.getItem('currentFilter') || 'all';
+                currentSort = localStorage.getItem('currentSort') || 'dueDate';
+                currentSearchTerm = localStorage.getItem('currentSearchTerm') || '';
+
             } catch (e) {
                 console.error('Loading failed', e);
                 tasks = [];
                 defaultTypes = ["Home", "School", "Work"];
+                currentFilter = 'all';
+                currentSort = 'dueDate';
+                currentSearchTerm = '';
             }
-            populateTypes();
+            // Set values to DOM elements based on loaded state
+            filterSelect.value = currentFilter;
+            sortSelect.value = currentSort;
+            searchInput.value = currentSearchTerm;
+
+            populateTypes(); // Populate types for main form
             renderTasks();
             setTodayDate(); // Set default date on load
         }
@@ -774,6 +848,8 @@
                 selectedType = newType;
                 if (!defaultTypes.includes(newType)) {
                     defaultTypes.push(newType);
+                    defaultTypes.sort(); // Keep types sorted
+                    populateTypes(); // Only re-populate if a new type was added
                 }
             }
 
@@ -786,8 +862,7 @@
             taskForm.reset();
             setTodayDate(); // Reset due date to today
             newTypeInput.value = ''; // Clear new type input
-            populateTypes(); // Re-populate types to include the new one and select it
-            typeSelect.value = selectedType; // Select the newly added type if it was used, or the default
+            typeSelect.value = selectedType; // Ensure the correct type remains selected after adding
         }
 
         function toggleComplete(id) {
@@ -805,11 +880,25 @@
         }
 
         confirmDeleteBtn.onclick = () => {
-            tasks = tasks.filter(x => x.id !== taskIdToDelete);
-            saveTasks();
-            renderTasks();
-            deleteConfirmModal.style.display = 'none';
-            taskIdToDelete = null;
+            // Add a deleting class to the task item for animation before removal
+            const taskElement = document.querySelector(`.task-item[data-id="${taskIdToDelete}"]`);
+            if (taskElement) {
+                taskElement.classList.add('deleting');
+                taskElement.addEventListener('transitionend', () => {
+                    tasks = tasks.filter(x => x.id !== taskIdToDelete);
+                    saveTasks();
+                    renderTasks(); // Re-render after item is fully hidden
+                    deleteConfirmModal.style.display = 'none';
+                    taskIdToDelete = null;
+                }, { once: true });
+            } else {
+                // Fallback if element not found (e.g., if already removed)
+                tasks = tasks.filter(x => x.id !== taskIdToDelete);
+                saveTasks();
+                renderTasks();
+                deleteConfirmModal.style.display = 'none';
+                taskIdToDelete = null;
+            }
         };
 
         cancelDeleteBtn.onclick = () => {
@@ -840,7 +929,7 @@
             const newPri = editPrioritySelect.value;
 
             if (!newDesc || !newDate || !newType || !newPri) {
-                // Implement more robust validation here if needed
+                // For edit modal, consider adding inline validation as well if time permits
                 alert('All fields are required for editing.');
                 return;
             }
@@ -854,10 +943,10 @@
             if (!defaultTypes.includes(newType)) {
                 defaultTypes.push(newType);
                 defaultTypes.sort(); // Keep types sorted
+                populateTypes(); // Update main form types if a new one was added
             }
 
             saveTasks();
-            populateTypes(); // Update main form types
             renderTasks();
             editTaskModal.style.display = 'none';
             taskIdToEdit = null;
@@ -886,31 +975,60 @@
         /* --- Render & Controls --- */
         function renderTasks() {
             let arr = tasks.slice();
+
+            // Apply search filter first
+            if (currentSearchTerm) {
+                const searchTermLower = currentSearchTerm.toLowerCase();
+                arr = arr.filter(t =>
+                    t.description.toLowerCase().includes(searchTermLower) ||
+                    t.type.toLowerCase().includes(searchTermLower)
+                );
+            }
+
+            // Apply completion filter
             if (currentFilter === 'completed') arr = arr.filter(x => x.completed);
             if (currentFilter === 'pending') arr = arr.filter(x => !x.completed);
 
+            // Apply sort
             if (currentSort === 'dueDate') {
                 arr.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-            } else {
+            } else if (currentSort === 'priority') {
                 const order = { Urgent: 4, High: 3, Medium: 2, Low: 1 };
                 arr.sort((a, b) => order[b.priority] - order[a.priority]);
             }
 
             const c = document.getElementById('taskList');
-            c.innerHTML = '';
+            c.innerHTML = ''; // Clear existing tasks
+
             if (!arr.length) {
                 c.innerHTML = `
                     <div class="empty-state">
                         <span class="material-icons">assignment_turned_in</span>
-                        <p>No tasks found for the current filter/sort.<br>Add a new task or adjust your filters!</p>
+                        <p>No tasks found for the current criteria.<br>Add a new task or adjust your filters/search!</p>
                     </div>
                 `;
                 return;
             }
 
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Normalize today's date to start of day
+
             arr.forEach(t => {
                 const el = document.createElement('div');
-                el.className = `task-item priority-${t.priority}${t.completed ? ' completed' : ''}`;
+                let additionalClasses = '';
+
+                // Due Date Highlighting Logic
+                const taskDueDate = new Date(t.dueDate);
+                taskDueDate.setHours(0, 0, 0, 0);
+
+                if (taskDueDate < today && !t.completed) {
+                    additionalClasses += ' overdue';
+                } else if (taskDueDate >= today && (taskDueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) <= 3 && !t.completed) {
+                    additionalClasses += ' due-soon';
+                }
+
+
+                el.className = `task-item priority-${t.priority}${t.completed ? ' completed' : ''}${additionalClasses}`;
                 el.setAttribute('data-id', t.id); // For easier targeting
 
                 el.innerHTML = `
@@ -945,14 +1063,23 @@
         }
 
         function filterTasks() {
-            currentFilter = document.getElementById('filter').value;
+            currentFilter = filterSelect.value;
+            saveTasks(); // Save the new filter setting
             renderTasks();
         }
 
         function sortTasks() {
-            currentSort = document.getElementById('sort').value;
+            currentSort = sortSelect.value;
+            saveTasks(); // Save the new sort setting
             renderTasks();
         }
+
+        function searchTasks() {
+            currentSearchTerm = searchInput.value.trim();
+            saveTasks(); // Save the new search term
+            renderTasks();
+        }
+
 
         // Event Listeners
         document.addEventListener('DOMContentLoaded', loadTasks); // Use DOMContentLoaded for better practice
