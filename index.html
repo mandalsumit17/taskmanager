@@ -4,35 +4,235 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Simple Task Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Material+Icons" rel="stylesheet">
   <style>
     /* --- Global Styles --- */
     * { box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f4f4f4; color: #333; }
-    h1 { text-align: center; }
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: linear-gradient(135deg, #e3eafc 0%, #f9f9f9 100%);
+      color: #222;
+      min-height: 100vh;
+    }
+    h1 {
+      text-align: center;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-top: 32px;
+      margin-bottom: 24px;
+      color: #2a3b4c;
+    }
 
     /* --- Task Form Styles --- */
-    .task-form { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto 20px; }
-    .task-form input, .task-form select, .task-form button { width: 100%; margin: 8px 0; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-    .task-form .inline { display: flex; gap: 10px; }
+    .task-form {
+      background: #fff;
+      padding: 28px 28px 20px 28px;
+      border-radius: 14px;
+      box-shadow: 0 4px 24px rgba(44,62,80,0.08);
+      max-width: 540px;
+      margin: 0 auto 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid #e3eafc;
+    }
+    .task-form input, .task-form select {
+      width: 100%;
+      margin: 0;
+      padding: 12px 14px;
+      border: 1.5px solid #d1d9e6;
+      border-radius: 6px;
+      font-size: 1rem;
+      background: #f7fafd;
+      transition: border 0.2s;
+    }
+    .task-form input:focus, .task-form select:focus {
+      border-color: #5b9df9;
+      outline: none;
+      background: #fff;
+    }
+    .task-form .inline {
+      display: flex;
+      gap: 10px;
+    }
     .task-form .inline > * { flex: 1; }
+    .task-form button {
+      width: 100%;
+      background: linear-gradient(90deg, #5b9df9 0%, #3b82f6 100%);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 0;
+      font-size: 1.08rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      margin-top: 8px;
+      box-shadow: 0 2px 8px rgba(91,157,249,0.08);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .task-form button:hover {
+      background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+      box-shadow: 0 4px 16px rgba(91,157,249,0.12);
+    }
 
     /* --- Task List Styles --- */
-    .controls, .task-list { max-width: 600px; margin: 0 auto; }
-    .controls { margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 10px; }
-    .controls select { flex: 1; }
-    .task-item { background: #fff; padding: 15px; margin-bottom: 10px; border-left: 5px solid; display: flex; flex-direction: column; border-radius: 4px; transition: background 0.3s; }
-    .task-item.completed { background: #e0ffe0; text-decoration: line-through; }
-    .task-header { display: flex; justify-content: space-between; align-items: center; }
-    .task-actions button { margin-left: 5px; padding: 5px 10px; }
+    .controls, .task-list {
+      max-width: 540px;
+      margin: 0 auto;
+    }
+    .controls {
+      margin-bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: #fff;
+      padding: 14px 18px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(44,62,80,0.04);
+      border: 1px solid #e3eafc;
+    }
+    .controls select {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1.5px solid #d1d9e6;
+      background: #f7fafd;
+      font-size: 1rem;
+    }
+    .task-list {
+      margin-bottom: 40px;
+    }
+    .task-item {
+      background: #fff;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      border-left: 6px solid;
+      display: flex;
+      flex-direction: column;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(44,62,80,0.06);
+      transition: background 0.3s, box-shadow 0.2s;
+      border-color: #e3eafc;
+      position: relative;
+    }
+    .task-item:hover {
+      background: #f7fafd;
+      box-shadow: 0 4px 20px rgba(44,62,80,0.10);
+    }
+    .task-item.completed {
+      background: #eafbe7;
+      text-decoration: line-through;
+      opacity: 0.8;
+    }
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .task-header strong {
+      font-size: 1.08rem;
+      color: #2a3b4c;
+      font-weight: 600;
+    }
+    .task-header small {
+      color: #7b8a9c;
+      font-size: 0.97rem;
+    }
+    .task-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .task-actions button {
+      background: none;
+      border: none;
+      color: #5b9df9;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 50%;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .task-actions button:hover {
+      background: #e3eafc;
+      color: #2563eb;
+    }
+    .task-actions .material-icons {
+      font-size: 1.3rem;
+      vertical-align: middle;
+    }
+    .task-actions input[type="checkbox"] {
+      accent-color: #43a047;
+      width: 18px; height: 18px;
+      margin-right: 2px;
+      cursor: pointer;
+    }
     .priority-Urgent { border-color: #e53935; }
     .priority-High { border-color: #f57c00; }
     .priority-Medium { border-color: #fbc02d; }
     .priority-Low { border-color: #43a047; }
 
+    /* --- Modal Styles --- */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(44,62,80,0.18);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .modal-box {
+      background: #fff;
+      padding: 32px 28px 24px 28px;
+      border-radius: 14px;
+      box-shadow: 0 8px 40px rgba(44,62,80,0.18);
+      text-align: center;
+      min-width: 280px;
+      max-width: 90vw;
+      border: 1px solid #e3eafc;
+    }
+    .modal-box p {
+      font-size: 1.12rem;
+      margin-bottom: 22px;
+      color: #2a3b4c;
+    }
+    .modal-box button {
+      margin: 0 10px;
+      padding: 10px 28px;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+    .modal-box #yes {
+      background: linear-gradient(90deg, #e53935 0%, #f57c00 100%);
+      color: #fff;
+    }
+    .modal-box #yes:hover {
+      background: linear-gradient(90deg, #b71c1c 0%, #f57c00 100%);
+    }
+    .modal-box #no {
+      background: #e3eafc;
+      color: #2a3b4c;
+    }
+    .modal-box #no:hover {
+      background: #d1d9e6;
+    }
+
     /* --- Responsive Layout --- */
     @media (max-width: 600px) {
       .inline { flex-direction: column; }
       .controls { flex-direction: column; }
+      .task-form, .controls, .task-list { max-width: 98vw; }
+      .task-form { padding: 16px 8px; }
+      .controls { padding: 10px 6px; }
+      .task-item { padding: 12px 8px; }
     }
   </style>
 </head>
@@ -132,14 +332,14 @@
 
     function deleteTask(id) {
       const confirmBox = document.createElement('div');
+      confirmBox.className = 'modal-overlay';
       confirmBox.innerHTML = `
-        <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.3);
-                         display:flex;align-items:center;justify-content:center;">
-          <div style="background:#fff;padding:20px;border-radius:8px;text-align:center;">
-            <p>Delete this task?</p>
-            <button id="yes">Yes</button><button id="no">No</button>
-          </div>
-        </div>`;
+        <div class="modal-box">
+          <p><span class="material-icons" style="color:#e53935;font-size:2.2rem;vertical-align:middle;">warning</span><br>Delete this task?</p>
+          <button id="yes">Yes</button>
+          <button id="no">No</button>
+        </div>
+      `;
       document.body.appendChild(confirmBox);
       confirmBox.querySelector('#yes').onclick = () => {
         tasks = tasks.filter(x=>x.id!==id);
@@ -197,12 +397,12 @@
           <div class="task-header">
             <div>
               <strong>${t.description}</strong><br>
-              Due: ${t.dueDate} | Type: ${t.type} | Priority: ${t.priority}
+              Due: ${t.dueDate} | Type: ${t.type} | Priority: ${t.priority}iority}</small>
             </div>
             <div class="task-actions">
-              <input type="checkbox" ${t.completed?'checked':''} onclick="toggleComplete(${t.id})">
-              <button onclick="editTask(${t.id})">Edit</button>
-              <button onclick="deleteTask(${t.id})">Delete</button>
+              <input type="checkbox" ${t.completed?'checked':''} onclick="toggleComplete(${t.id})">title="Mark as complete">
+              <button onclick="editTask(${t.id})">Edit</button><span class="material-icons">edit</span></button>
+              <button onclick="deleteTask(${t.id})">Delete</button><span class="material-icons">delete</span></button>
             </div>
           </div>`;
         c.appendChild(el);
@@ -214,6 +414,17 @@
       renderTasks();
     }
 
+    function sortTasks() {
+      currentSort = document.getElementById('sort').value;
+      renderTasks();
+    }
+
+    window.onload = loadTasks;
+  </script>
+</body>
+</html>
+
+</html></body>  </script>    loadTasks();    /* --- Init --- */    }      renderTasks();      currentSort = document.getElementById('sort').value;    function sortTasks() {
     function sortTasks() {
       currentSort = document.getElementById('sort').value;
       renderTasks();
