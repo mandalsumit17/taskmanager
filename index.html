@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional Task Manager</title>
+    <title>Simple Task Manager</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Material+Icons" rel="stylesheet">
     <style>
         /* --- Global Styles --- */
@@ -606,6 +606,11 @@
             <option value="Medium" selected>Medium</option>
             <option value="Low">Low</option>
         </select>
+        <!-- Subtasks input -->
+        <div id="subtasksContainer">
+            <input type="text" id="subtaskInput" placeholder="Add subtask and press Enter" aria-label="Add subtask">
+            <ul id="subtasksList"></ul>
+        </div>
         <button onclick="addTask()" aria-label="Add New Task">
             <span class="material-icons" style="vertical-align:middle;margin-right:6px;font-size:1.2em;">add_circle</span>
             Add Task
@@ -677,6 +682,33 @@
         let currentFilter = 'all';
         let currentSort = 'dueDate';
         let currentSearchTerm = ''; // New state for search
+        let subtasks = [];
+        const subtaskInput = document.getElementById('subtaskInput');
+        const subtasksList = document.getElementById('subtasksList');
+
+        subtaskInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && subtaskInput.value.trim()) {
+                subtasks.push({ text: subtaskInput.value.trim(), done: false });
+                subtaskInput.value = '';
+                renderSubtasks();
+            }
+        });
+        function renderSubtasks() {
+            subtasksList.innerHTML = '';
+            subtasks.forEach((st, i) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<input type='checkbox' ${st.done ? 'checked' : ''} onclick='toggleSubtask(${i})'> ${st.text} <button onclick='removeSubtask(${i})' style='color:#e53935;border:none;background:none;'>×</button>`;
+                subtasksList.appendChild(li);
+            });
+        }
+        window.toggleSubtask = function(i) {
+            subtasks[i].done = !subtasks[i].done;
+            renderSubtasks();
+        }
+        window.removeSubtask = function(i) {
+            subtasks.splice(i,1);
+            renderSubtasks();
+        }
 
         let taskIdToDelete = null; // To store ID for delete confirmation
         let taskIdToEdit = null; // To store ID for edit modal
@@ -818,7 +850,6 @@
         /* --- Task CRUD --- */
         function addTask() {
             let isValid = true;
-
             const desc = descriptionInput.value.trim();
             const due = dueDateInput.value;
             let selectedType = typeSelect.value;
@@ -848,21 +879,21 @@
                 selectedType = newType;
                 if (!defaultTypes.includes(newType)) {
                     defaultTypes.push(newType);
-                    defaultTypes.sort(); // Keep types sorted
-                    populateTypes(); // Only re-populate if a new type was added
+                    defaultTypes.sort();
+                    populateTypes();
                 }
             }
-
-            const task = { id: Date.now(), description: desc, dueDate: due, type: selectedType, priority, completed: false };
+            // Attach subtasks to the task
+            const task = { id: Date.now(), description: desc, dueDate: due, type: selectedType, priority, completed: false, subtasks: subtasks.slice() };
             tasks.push(task);
             saveTasks();
             renderTasks();
-
-            // Reset form and related fields
             taskForm.reset();
-            setTodayDate(); // Reset due date to today
-            newTypeInput.value = ''; // Clear new type input
-            typeSelect.value = selectedType; // Ensure the correct type remains selected after adding
+            setTodayDate();
+            newTypeInput.value = '';
+            typeSelect.value = selectedType;
+            subtasks = [];
+            renderSubtasks();
         }
 
         function toggleComplete(id) {
@@ -972,6 +1003,16 @@
             clearCompletedConfirmModal.style.display = 'none';
         };
 
+        // Subtask toggle for tasks in the list
+        window.toggleTaskSubtask = function(taskId, subIdx) {
+            const t = tasks.find(x => x.id === taskId);
+            if (t && t.subtasks && t.subtasks[subIdx]) {
+                t.subtasks[subIdx].done = !t.subtasks[subIdx].done;
+                saveTasks();
+                renderTasks();
+            }
+        }
+
         /* --- Render & Controls --- */
         function renderTasks() {
             let arr = tasks.slice();
@@ -1016,21 +1057,30 @@
             arr.forEach(t => {
                 const el = document.createElement('div');
                 let additionalClasses = '';
-
                 // Due Date Highlighting Logic
                 const taskDueDate = new Date(t.dueDate);
                 taskDueDate.setHours(0, 0, 0, 0);
-
                 if (taskDueDate < today && !t.completed) {
                     additionalClasses += ' overdue';
                 } else if (taskDueDate >= today && (taskDueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24) <= 3 && !t.completed) {
                     additionalClasses += ' due-soon';
                 }
-
-
                 el.className = `task-item priority-${t.priority}${t.completed ? ' completed' : ''}${additionalClasses}`;
-                el.setAttribute('data-id', t.id); // For easier targeting
-
+                el.setAttribute('data-id', t.id);
+                // Subtasks progress bar
+                let subtaskBar = '';
+                if (t.subtasks && t.subtasks.length) {
+                    const done = t.subtasks.filter(st => st.done).length;
+                    const percent = Math.round((done / t.subtasks.length) * 100);
+                    subtaskBar = `<div style='margin:8px 0 0 0;'><div style='height:8px;width:100%;background:#e3eafc;border-radius:4px;overflow:hidden;'><div style='height:8px;width:${percent}%;background:#43a047;transition:width 0.3s;'></div></div><small style='color:#7b8a9c;'>${done}/${t.subtasks.length} subtasks done</small></div>`;
+                }
+                // Subtasks checklist
+                let subtasksHtml = '';
+                if (t.subtasks && t.subtasks.length) {
+                    subtasksHtml = `<ul style='margin:8px 0 0 0;padding-left:18px;'>` + t.subtasks.map((st, i) =>
+                        `<li><input type='checkbox' ${st.done ? 'checked' : ''} onclick='toggleTaskSubtask(${t.id},${i})'> ${st.text}</li>`
+                    ).join('') + `</ul>`;
+                }
                 el.innerHTML = `
                     <div class="task-header">
                         <div>
@@ -1045,6 +1095,7 @@
                                 <span class="material-icons" style="font-size:1em;vertical-align:middle;color:#fbc02d;">flag</span>
                                 ${t.priority}
                             </small>
+                            ${subtaskBar}
                         </div>
                         <div class="task-actions">
                             <label title="Mark as complete">
@@ -1057,45 +1108,34 @@
                                 <span class="material-icons">delete</span>
                             </button>
                         </div>
-                    </div>`;
+                    </div>
+                    ${subtasksHtml}
+                `;
                 c.appendChild(el);
             });
         }
 
+        /* --- Filter, Sort, and Search --- */
         function filterTasks() {
             currentFilter = filterSelect.value;
-            saveTasks(); // Save the new filter setting
+            saveTasks();
             renderTasks();
         }
 
         function sortTasks() {
             currentSort = sortSelect.value;
-            saveTasks(); // Save the new sort setting
+            saveTasks();
             renderTasks();
         }
 
         function searchTasks() {
             currentSearchTerm = searchInput.value.trim();
-            saveTasks(); // Save the new search term
+            saveTasks();
             renderTasks();
         }
 
-
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', loadTasks); // Use DOMContentLoaded for better practice
-        clearCompletedTasksBtn.addEventListener('click', clearCompletedTasks);
-
-        // Optional: Close modals if clicked outside
-        deleteConfirmModal.addEventListener('click', (e) => {
-            if (e.target === deleteConfirmModal) deleteConfirmModal.style.display = 'none';
-        });
-        clearCompletedConfirmModal.addEventListener('click', (e) => {
-            if (e.target === clearCompletedConfirmModal) clearCompletedConfirmModal.style.display = 'none';
-        });
-        editTaskModal.addEventListener('click', (e) => {
-            if (e.target === editTaskModal) editTaskModal.style.display = 'none';
-        });
-
+        /* --- Initial Load --- */
+        loadTasks();
     </script>
 </body>
 </html>
